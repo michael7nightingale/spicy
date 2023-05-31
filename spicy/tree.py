@@ -56,11 +56,10 @@ class Node(NodeBase):
 
         # get index of the node in parent  children`s list
         node_idx: int | None = self.findIndex(node=node)
-
         if node_idx is None:
             return None     # incorrect data or node is the most super
 
-        if node_idx == len(node.parent.children):   # find in the next parent children
+        if node_idx == len(node.parent.children) - 1:   # find in the next parent children
             return self.findNext(node.parent, True)
 
         else:
@@ -100,33 +99,38 @@ class Node(NodeBase):
         """Adding new child in list"""
         if isinstance(child, NodeBase):
             self.children.append(child)
+        else:
+            raise ValueError("Node child must by Node instance")
 
-        raise ValueError("Node child must by Node instance")
 
-
-class Tree:
+class Tree(Node):
 
     def __init__(self,
-                 data: Any,
-                 root: Node | None = None):
-        self.root = root
-        self.root_data = data
+                 data: Any = None,
+                 ):
+        super().__init__(data=data, parent=None)
 
-    @classmethod
-    def add(cls, parent: Node, *nodes):
-        if parent is None:
-            raise ValueError("Parent is None~")
+    def addChild(self, child: NodeBase) -> None:
+        """Adding new child in list"""
+        if isinstance(child, NodeBase):
+            self.children.append(child)
+        else:
+            raise ValueError("Node child must by Node instance")
 
-        for node in nodes:
-            parent.children.append(node)
+    def __iter__(self):
+        now = self
+        while now is not None:
+            yield now
+            now = now.findNext()
 
 
 if __name__ == '__main__':
     n_root = Node(data=123)
 
-    tree = Tree(data=0, root=n_root)
+    tree = Tree(data=0)
 
-    tree.add(n_root, Node(10, n_root), Node(12003, n_root))
+    tree.addChild(n_root, Node(10, n_root), Node(12003, n_root))
 
     last = n_root.children[-1]
-    print([i.data for i in last.findParents()])
+    for n in tree:
+        print(n.data)
