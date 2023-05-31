@@ -122,15 +122,3 @@ class Tree(Node):
         while now is not None:
             yield now
             now = now.findNext()
-
-
-if __name__ == '__main__':
-    n_root = Node(data=123)
-
-    tree = Tree(data=0)
-
-    tree.addChild(n_root, Node(10, n_root), Node(12003, n_root))
-
-    last = n_root.children[-1]
-    for n in tree:
-        print(n.data)

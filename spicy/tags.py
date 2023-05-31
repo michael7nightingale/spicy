@@ -208,36 +208,33 @@ class MetaData:
         return self.attrs[item]
 
 
-# with open('d:/Progs/PycharmProjects/RepoFastAPI/public/templates/main/layout.html') as file:
-#     docs = file.read()
-
-docs = """
-<!DOCTYPE html>
-<html lang="en">
-    <meta charset='utf-8' bios=123>
-    <meta parent='id'>
-       <a aria-expanded="false" role="button" data-toggle="dropdown" class="dropdown-toggle" href="#">
-       Help
-       <span class="caret">
-       </span>
-       </a>
-       <div>
-        <a aria-expanded="false" role="button" data-toggle="dropdown" class="dropdown-toggle" href="#">
-       Help
-       </a>
-       <span class="caret">
-        <h3 id='greeting1'>Hello</h3>
-       </div>
-        <a aria-expanded="false" role="button" data-toggle="dropdown" class="dropdown-toggle" href="#">
-       Help
-       </a>
-       <span class="caret">
-       <script src="//capp.nicepage.com/91ebab354796d476100a0fbf1b762fc8d6d7c384/templates-page-libs.js" defer></script>
- </html>
-          """
-
-
 if __name__ == '__main__':
+    # with open('d:/Progs/PycharmProjects/RepoFastAPI/public/templates/main/layout.html') as file:
+    #     docs = file.read()
 
+    docs = """
+    <!DOCTYPE html>
+    <html lang="en">
+        <meta charset='utf-8' bios=123>
+        <meta parent='id'>
+           <a aria-expanded="false" role="button" data-toggle="dropdown" class="dropdown-toggle" href="#">
+           Help
+           <span class="caret">
+           </span>
+           </a>
+           <div>
+            <a aria-expanded="false" role="button" data-toggle="dropdown" class="dropdown-toggle" href="#">
+           Help
+           </a>
+           <span class="caret">
+            <h3 id='greeting1'>Hello</h3>
+           </div>
+            <a aria-expanded="false" role="button" data-toggle="dropdown" class="dropdown-toggle" href="#">
+           Help
+           </a>
+           <span class="caret">
+           <script src="//capp.nicepage.com/91ebab354796d476100a0fbf1b762fc8d6d7c384/templates-page-libs.js" defer></script>
+     </html>
+              """
     el = HTMLDocument(docs)
     print(*el.findAll('a', class_='dropdown-toggle'))
