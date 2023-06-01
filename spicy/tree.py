@@ -30,7 +30,13 @@ class NodeBase(abc.ABC):
         pass
 
     def __iter__(self):
-        pass
+        now = self
+        while now is not None:
+            yield now
+            now = now.findNext()
+
+    def __len__(self):
+        return int(bool(self.data)) + len(self.children)
 
 
 class Node(NodeBase):
@@ -69,19 +75,6 @@ class Node(NodeBase):
         """Get patent"""
         return self.parent
 
-    # def findParents(self, node:  NodeBase | None = None):
-    #     """Find all super nodes of the node"""
-    #     if node is None:
-    #         node = self
-    #     parents = []
-    #     now_parent = node.parent
-    #     while now_parent is not None:
-    #         to_extend = []
-    #         for child in now_parent[:node.findIndex()]:
-    #             for
-    #
-    #     return parents
-
     def findPrevious(self, node: NodeBase | None = None) -> NodeBase | None:
         """Get previous element by the top."""
         if node is None:
@@ -117,8 +110,3 @@ class Tree(Node):
         else:
             raise ValueError("Node child must by Node instance")
 
-    def __iter__(self):
-        now = self
-        while now is not None:
-            yield now
-            now = now.findNext()

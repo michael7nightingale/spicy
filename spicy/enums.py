@@ -1,7 +1,7 @@
 import enum
-import tags
+from html_tags import HTMLDocument
 
 
 class TypeEnum(enum.Enum):
-    types = {"html": tags.HTMLDocument, 'xml':  BaseException}
+    types = {"html": HTMLDocument, 'xml':  BaseException}
 
