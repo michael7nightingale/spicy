@@ -1,9 +1,11 @@
 import os
+import requests
 
 import enums
+from bases import Tag
 
 
-def Spicy(text: str, type_: str):
+def Spicy(text: str, type_: str) -> Tag:
     if type_ not in enums.TypeEnum.types.value:
         raise ValueError
 
@@ -11,9 +13,14 @@ def Spicy(text: str, type_: str):
 
 
 if __name__ == '__main__':
-    with open('/'.join(os.getcwd().rsplit('\\')[:-1]) + '/tests/test.html') as file:
-        doc = file.read()
+    # url = "https://github.com/michael7nightingale"
+    # response = requests.get(url)
+    with open('d:/Progs/PycharmProjects/spicy/tests/mini-test.html', encoding='utf-8') as f:
+        txt = f.read()
 
-    s = Spicy(text=doc, type_='html')
-    print(*s.findAll("li", class_='thumbnail-item'))
+    s = Spicy(txt, type_='html')
 
+    with open('d:/Progs/PycharmProjects/spicy/tests/spiced.html', 'w', encoding='utf-8') as f2:
+        f2.write(s.toText())
+
+    # print(s)

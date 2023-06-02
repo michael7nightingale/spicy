@@ -52,9 +52,10 @@ class Tag(abc.ABC):
     def toText(self, layer: int = 0, tab: bool = True, split: str = "\n"):
         """Returns the string object of the tag, incuding all children and tabs"""
         attrs = " ".join((f"{name}='{val}'" for name, val in self.attrs.items()))
-        tab = "\t" if tab else ""
+        tab = "  " if tab else ""
         if self.is_closed:
-            text = tab * layer + f"<{self.tag} {attrs}>{split}{self.innerText}{split}"
+            to_cont = split if self.children else ""
+            text = tab * layer + f"<{self.tag} {attrs}>{self.innerText}{to_cont}"
         else:
             text = tab * layer + f"<{self.tag} {attrs}>{split}"
         for ch in self.children:
@@ -93,6 +94,7 @@ class BaseAttribute(abc.ABC):
     def __init__(self, attrs: dict | list[tuple], **kwargs):
         self._attrs = dict(attrs)
         self._attrs.update(kwargs)
+        super().__init__()
 
     def __setitem__(self, key, value):
         if isinstance(key, str) and isinstance(value, str):
