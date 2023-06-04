@@ -3,7 +3,7 @@ import re
 from typing import Any
 from reprlib import repr
 
-from tree import Tree
+from .tree import Tree
 
 
 class Tag(abc.ABC):
@@ -13,8 +13,8 @@ class Tag(abc.ABC):
     ATTRS_PATTERN: re.Pattern
 
     def __init__(self, text: Any, is_closed: bool = True):
-        self.tag: str
-        self.attrs: dict
+        self.tag: str = ''
+        self.attrs: dict = {}
         self.id: str
         self.is_closed = is_closed
         self.innerText: str = ""
@@ -51,6 +51,7 @@ class Tag(abc.ABC):
 
     def toText(self, layer: int = 0, tab: bool = True, split: str = "\n"):
         """Returns the string object of the tag, incuding all children and tabs"""
+        # print(self.children)
         attrs = " ".join((f"{name}='{val}'" for name, val in self.attrs.items()))
         tab = "  " if tab else ""
         if self.is_closed:

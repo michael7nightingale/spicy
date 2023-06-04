@@ -1,5 +1,5 @@
 import enum
-from html_tags import HTMLDocument
+from .html_tags import HTMLDocument
 
 
 class TypeEnum(enum.Enum):

@@ -1,5 +1,5 @@
-from bases import BaseAttribute
-from tree import Node
+from .bases import BaseAttribute
+from .tree import Node
 
 
 class Attribute(BaseAttribute, Node):
