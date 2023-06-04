@@ -66,7 +66,7 @@ class Tag(abc.ABC):
         return text
 
     def __repr__(self) -> str:
-        return repr(f"<Tag: {self.tag}, id={self.id}>")
+        return repr(f"<Tag: {self.tag}>")
 
 
 class BaseDocument(Tag, Tree):

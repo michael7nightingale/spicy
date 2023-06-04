@@ -1,5 +1,5 @@
 import re
-from typing import Any, Type
+from typing import Type
 
 from .bases import Tag, BaseAttribute
 from .tree import Node, Tree
@@ -72,13 +72,13 @@ class HTMLTag(Tag, Node):
                 last_inner_tag = ''
 
             tag = pattern.search(text)
-        return (inner_tags, text.strip())
+        return inner_tags, text.strip()
 
     def validateAttrs(self, attrs: list[tuple]):
         try:
             return dict(attrs)
         except:
-            raise AttributeError("Attributes are not ovalid")
+            raise AttributeError("Attributes are not valid")
 
     def _set_tag(self, text: str, parent=None):
         FILL_UNSTATED_WITH = None
@@ -138,13 +138,12 @@ class HTMLTag(Tag, Node):
 
 
 class HTMLDocument(HTMLTag, Tree):
-    __slots__ = ()
+    __slots__ = ("version", )
 
     def __init__(self, text: str):
         self.meta: list[Meta] = []
-        self.doctype: str
+        self.version: int
         self.charset: str
-        self.content: str = text
         super().__init__(text)
 
         # super calls _set_tag() before

@@ -1,5 +1,4 @@
 import re
-import time
 
 html_text = """
     123
