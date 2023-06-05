@@ -4,6 +4,7 @@ from typing import Type
 from .bases import Tag, BaseAttribute
 from .tree import Node, Tree
 from .html_attrs import Link, Style, Meta, Image
+from .enums import HTMLPatterns
 
 
 attributes_classes: dict[str, Type[BaseAttribute]] = {
@@ -11,7 +12,7 @@ attributes_classes: dict[str, Type[BaseAttribute]] = {
     "meta": Meta,
     "link": Link,
     "img": Image,
-
+    # "button": Image,
     "path": Image,
     "base": Image,
     "hr": Image,
@@ -39,16 +40,16 @@ class HTMLTag(Tag, Node):
             raise ValueError("Tag is not valid! (it is empty)")
 
     def _find_inner_tags(self, text: str) -> tuple[list[str], str]:
-        pattern = re.compile(r"(<([/\-_\w]+)[^>]*>)")
         tag_stack = []
         inner_tags = []
         unclosed_tags = []
         last_inner_tag = ''
-        tag = pattern.search(text)
+        tag = HTMLPatterns.INNER_TAG_PATTERN.value.search(text)
 
         while tag:
             tag_beginning, tag_name = tag.groups()
             idx = text.index(tag_beginning)
+
             if tag_name in attributes_classes:
                 # from_replace_idx = idx
                 last_inner_tag += tag_beginning
@@ -59,8 +60,14 @@ class HTMLTag(Tag, Node):
                 last_inner_tag += text[from_replace_idx:idx + len(tag_beginning)]
                 text = text[:from_replace_idx] + text[idx + len(tag_beginning):]
                 last_stack_tag = tag_stack[-1]
-                if tag_name.replace('/', '') == last_stack_tag:
-                    tag_stack.pop()
+                if '--' in tag_name:
+                    print(tag_name.replace('--', ''))
+                    if '!--' in last_stack_tag and last_stack_tag.replace('!--', '') == tag_name.replace('--', '').lstrip('/'):
+                        print(98)
+                        tag_stack.pop()
+                else:
+                    if tag_name.replace('/', '') == last_stack_tag:
+                        tag_stack.pop()
             else:
                 from_replace_idx = idx
                 last_inner_tag += tag_beginning
@@ -71,7 +78,7 @@ class HTMLTag(Tag, Node):
                 inner_tags.append(last_inner_tag)
                 last_inner_tag = ''
 
-            tag = pattern.search(text)
+            tag = HTMLPatterns.INNER_TAG_PATTERN.value.search(text)
         return inner_tags, text.strip()
 
     def validateAttrs(self, attrs: list[tuple]):
@@ -82,13 +89,12 @@ class HTMLTag(Tag, Node):
 
     def _set_tag(self, text: str, parent=None):
         FILL_UNSTATED_WITH = None
-        ATTRS_PATTERN = re.compile(r"(?P<name>[\-_\w]*)\s*?=\s*?(?P<comma>[\"\'])?(?P<value>[0-9a-zA-Z-:_;,./ ]*)(?P=comma)?")
-        TAG_PATTERN = re.compile(r'<(?P<tag>[\w\-_]+)(?P<attrs>[^>]*)>(?P<inner_tags>.*)</\1>', re.DOTALL)
+
         if parent is None:  # set parent after the simple call
             parent = self
 
         if text.count('<') > 1:
-            match_text = TAG_PATTERN.findall(text)
+            match_text = HTMLPatterns.TAG_PATTERN.value.findall(text)
             # print(text)
             tag, attrs, inner = match_text[0]
             if isinstance(parent, Tree):
@@ -97,7 +103,7 @@ class HTMLTag(Tag, Node):
             self.tag = self.validateTag(tag)     # tag validation
 
             del tag
-            match_attrs = ATTRS_PATTERN.findall(attrs)
+            match_attrs = HTMLPatterns.ATTRS_PATTERN.value.findall(attrs)
             del attrs
 
             self.attrs = self.validateAttrs([i[:1] + i[2:] for i in match_attrs])
@@ -117,7 +123,7 @@ class HTMLTag(Tag, Node):
             tag, attrs = match_text[0]
             self.tag = tag
             self.is_closed = False
-            match_attrs = ATTRS_PATTERN.findall(attrs)
+            match_attrs = HTMLPatterns.ATTRS_PATTERN.value.findall(attrs)
             del attrs
 
             self.attrs = self.validateAttrs([i[:1] + i[2:] for i in match_attrs])
