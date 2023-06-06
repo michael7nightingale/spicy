@@ -8,7 +8,6 @@ from .enums import HTMLPatterns
 
 
 attributes_classes: dict[str, Type[BaseAttribute]] = {
-    "style": Style,
     "meta": Meta,
     "link": Link,
     "img": Image,
@@ -63,7 +62,6 @@ class HTMLTag(Tag, Node):
                 if '--' in tag_name:
                     print(tag_name.replace('--', ''))
                     if '!--' in last_stack_tag and last_stack_tag.replace('!--', '') == tag_name.replace('--', '').lstrip('/'):
-                        print(98)
                         tag_stack.pop()
                 else:
                     if tag_name.replace('/', '') == last_stack_tag:
