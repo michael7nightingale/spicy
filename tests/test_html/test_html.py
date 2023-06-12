@@ -13,8 +13,12 @@ def test_html():
     )
     print(spicy.tag)    # html
     print(spicy.children)
-    print(spicy)
+    assert not spicy
 
 
-test_html()
 
+
+
+
+
+    # test_broad1()

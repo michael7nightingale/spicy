@@ -1,18 +1,20 @@
 import abc
 import re
+from enum import Enum
 from typing import Any
 from reprlib import repr
 
-from .tree import Tree
+from spicy.tree import Tree
 
 
 class Tag(abc.ABC):
     """Base tag class."""
     __slots__ = ("tag", "innerText", 'attrs', "id", "is_closed")
-    TAG_PATTERN: re.Pattern
-    ATTRS_PATTERN: re.Pattern
+    _patterns: Enum
 
-    def __init__(self, text: Any, is_closed: bool = True):
+    def __init__(self,
+                 text: Any,
+                 is_closed: bool = True):
         self.tag: str = ''
         self.attrs: dict = {}
         self.id: str
@@ -105,3 +107,7 @@ class BaseAttribute(abc.ABC):
 
     def __getitem__(self, item):
         return self._attrs[item]
+
+
+
+

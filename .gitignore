@@ -2,5 +2,11 @@
 __pycache__/
 venv/
 spicy/__pycache__/
+spicy/tree/__pycache__/
+spicy/tags/__pycache__/
+spicy/parser/__pycache__/
+spicy/parser/documents/__pycache__/
+spicy/parser/tags/__pycache__/
 tests/__pycache__/
+.pytest_cache
 

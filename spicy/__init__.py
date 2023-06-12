@@ -1,9 +1,6 @@
-import os
-import requests
-
-from .bases import Tag
-from .xml_tags import XMLDocument
-from .html_tags import HTMLDocument
+from spicy.parser.tags.bases import Tag
+from spicy.parser.tags import XMLDocument
+from spicy.parser.tags import HTMLDocument
 
 
 types_ = {
@@ -23,4 +20,3 @@ def Spicy(text: str, type_: str = 'html') -> Tag:
         raise ValueError
 
     return types_[type_](text)
-

@@ -1,13 +1,12 @@
-import re
-
-from .bases import Tag
-from .tree import Node, Tree
-from .enums import XMLPatterns
+from spicy.parser.tags.bases import Tag
+from spicy.tree import Node, Tree
+from spicy.enums import XMLPatterns
 
 
 class XMLTag(Tag, Node):
     """XML tag class."""
     __slots__ = ("tag", "innerText", 'attrs')
+    _patterns = XMLPatterns
 
     def __init__(self, text: str):
         super().__init__(text)
@@ -17,17 +16,17 @@ class XMLTag(Tag, Node):
         if parent is None:  # set parent after the simple call
             parent = self
         if isinstance(parent, Tree):
-            version = float(XMLPatterns.XML_PATTERN.value.findall(text)[0][1])
+            version = float(self._patterns.XML_PATTERN.value.findall(text)[0][1])
             if not version:
                 raise ValueError("Xml version is required.")
 
-        match_text = XMLPatterns.TAG_PATTERN.value.findall(text)
+        match_text = self._patterns.TAG_PATTERN.value.findall(text)
         tag, attrs, inner = match_text[0]
 
         self.tag = self.validateTag(tag)     # tag validation
         del tag
 
-        match_attrs = XMLPatterns.ATTRS_PATTERN.value.findall(attrs)
+        match_attrs = self._patterns.ATTRS_PATTERN.value.findall(attrs)
         del attrs
         self.attrs = self.validateAttrs([i[:1] + i[2:] for i in match_attrs])
 
@@ -38,11 +37,12 @@ class XMLTag(Tag, Node):
             child.parent = parent
             parent.addChild(child)
 
-    def _find_inner_tags(self, text: str) -> tuple[list[str], str]:
+    @classmethod
+    def _find_inner_tags(cls, text: str) -> tuple[list[str], str]:
         tag_stack = []
         inner_tags = []
         last_inner_tag = ''
-        tag = XMLPatterns.INNER_TAG_PATTERN.value.search(text)
+        tag = cls._patterns.INNER_TAG_PATTERN.value.search(text)
 
         while tag:
             tag_beginning, tag_name = tag.groups()
@@ -64,7 +64,7 @@ class XMLTag(Tag, Node):
                 inner_tags.append(last_inner_tag)
                 last_inner_tag = ''
 
-            tag = XMLPatterns.INNER_TAG_PATTERN.value.search(text)
+            tag = cls._patterns.INNER_TAG_PATTERN.value.search(text)
         return inner_tags, text.strip()
 
     def validateTag(self, tag: str):
@@ -87,13 +87,3 @@ class XMLTag(Tag, Node):
                 else:
                     if all(t.attrs.get(i) == kwargs[i] for i in kwargs):
                         yield t
-
-
-class XMLDocument(XMLTag, Tree):
-    __slots__ = ()
-
-    def __init__(self, text: str):
-        super().__init__(text)
-
-        # super calls _set_tag() before
-
