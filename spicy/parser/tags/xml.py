@@ -1,6 +1,9 @@
+import threading
+import multiprocessing as mp
+
 from spicy.parser.tags.bases import Tag
 from spicy.tree import Node, Tree
-from spicy.enums import XMLPatterns
+from spicy.utils.enums import XMLPatterns
 
 
 class XMLTag(Tag, Node):
@@ -32,10 +35,16 @@ class XMLTag(Tag, Node):
 
         inner_tags, inner_text = self._find_inner_tags(inner)
         self.innerText = inner_text
-        for t in inner_tags:
-            child = XMLTag(t)
-            child.parent = parent
-            parent.addChild(child)
+        # decide what task type to user
+        if self.Config.use_processes:
+            with mp.Pool() as pool:
+                pool.map(self._set_inner_tag, inner_tags)
+        elif self.Config.use_threads:
+            for t in inner_tags:
+                threading.Thread(target=self._set_inner_tag, args=(t,)).start()
+        else:
+            for t in inner_tags:
+                self._set_inner_tag(text=t)
 
     @classmethod
     def _find_inner_tags(cls, text: str) -> tuple[list[str], str]:
