@@ -3,7 +3,7 @@ from urllib.request import Request, urlopen
 import asyncio
 
 
-def test_html():
+def html():
     request = Request(url='https://example.com/')
     with urlopen(request) as response:
         html_text = response.read().decode(encoding='utf-8')
@@ -17,7 +17,7 @@ def test_html():
     print(spicy)
 
 
-# test_html()
+html()
 
 
 async def async_test_html():
@@ -34,5 +34,5 @@ async def async_test_html():
     print(spicy)
 
 
-asyncio.run(async_test_html())
+# asyncio.run(async_test_html())
 

@@ -46,11 +46,11 @@ class BaseDocument(Tree):
             with mp.Pool() as pool:
                 pool.map(self._set_inner_tag, inner_tags)
         elif self.Config.use_threads:
-            for t in inner_tags:
-                threading.Thread(target=self._set_inner_tag, args=(t, )).start()
+            self._set_inner_tag_queue(inner_tags)
         else:
             for t in inner_tags:
                 self._set_inner_tag(t)
+
     def _set_inner_tag(self, text: str):
         inner_tag = self.tag_type(
             text=text,
@@ -59,6 +59,38 @@ class BaseDocument(Tree):
         )
         inner_tag.parent = self
         self.addChild(inner_tag)
+
+    def _set_inner_tag_queue(self, inner_tags: list):
+        n = len(inner_tags)
+        n_ready = 0
+        event = threading.Event()
+        self.children = [None] * n
+
+        def inner(number, text: str):
+            nonlocal self, n, n_ready, event
+            inner_tag = self.tag_type(
+                text=text,
+                use_threads=self.Config.use_threads,
+                use_processes=self.Config.use_processes
+            )
+            inner_tag.parent = self
+            self.children[number] = inner_tag
+
+            n_ready += 1
+            if n_ready == n:
+                event.set()
+
+        for idx, tag in enumerate(inner_tags):
+            th = threading.Thread(
+                target=inner,
+                args=(idx, tag)
+            )
+            th.start()
+
+        while not event.wait():
+            pass
+
+
 
     def _validate_tag(self, tag: str):
         tag = tag.strip()

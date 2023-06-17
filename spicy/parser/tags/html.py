@@ -48,7 +48,7 @@ class HTMLTag(Tag, Node):
 
         while tag:
             tag_beginning, tag_name = tag.groups()
-            idx = text.index(tag_beginning)
+            idx = tag.start()
 
             if tag_name in attributes_classes:
                 last_inner_tag += tag_beginning
@@ -90,7 +90,7 @@ class HTMLTag(Tag, Node):
         # if parent is None:  # set parent after the simple call
         #     parent = self
 
-        if text.count('<') > 1:
+        try:
             match_text = self._patterns.TAG_PATTERN.value.findall(text)
             tag, attrs, inner = match_text[0]
             self.tag = self.validateTag(tag)     # tag validation
@@ -115,7 +115,7 @@ class HTMLTag(Tag, Node):
             else:
                 for t in inner_tags:
                     self._set_inner_tag(text=t)
-        else:
+        except (IndexError, ):
             ATTRIBUTE_PATTERN = self._patterns.ATTRIBUTE_PATTERN
             match_text = ATTRIBUTE_PATTERN.value.findall(text)
             tag, attrs = match_text[0]
