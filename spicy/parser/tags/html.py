@@ -49,8 +49,10 @@ class HTMLTag(Tag, Node):
         while tag:
             tag_beginning, tag_name = tag.groups()
             idx = tag.start()
+            if '--' in tag_name:
+                text = text.replace(tag_beginning, '', 1)
 
-            if tag_name in attributes_classes:
+            elif tag_name in attributes_classes:
                 last_inner_tag += tag_beginning
                 unclosed_tags.append(tag_beginning)
                 text = text.replace(tag_beginning, '', 1)
@@ -65,6 +67,7 @@ class HTMLTag(Tag, Node):
                 else:
                     if tag_name.replace('/', '') == last_stack_tag:
                         tag_stack.pop()
+
             else:
                 from_replace_idx = idx
                 last_inner_tag += tag_beginning

@@ -65,3 +65,29 @@ def test_broad1():
     a, *_ = p2.children
     assert a.innerText == "More information..."
     assert a.attrs == {"href": "https://www.iana.org/domains/example"}
+
+
+def test_comment():
+    with open("../docs/html/test_comment.html") as file:
+        html_text = file.read()
+
+    spicy = Spicy(
+        text=html_text
+    )
+    # print(spicy)
+    assert spicy
+
+
+def test_broad2():
+    with open('../docs/html/test_broad2.html', encoding="utf-8") as file:
+        html_text = file.read()
+
+    spicy = Spicy(
+        html_text,
+
+    )
+    # print(spicy)
+    assert spicy
+
+
+# test_comment()
