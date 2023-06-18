@@ -137,6 +137,40 @@ class HTMLTag(Tag, Node):
             self.id = self.attrs.get('id', FILL_UNSTATED_WITH)
             self.class_ = self.attrs.get('class', FILL_UNSTATED_WITH)
 
+    def _set_inner_tag_queue(self, inner_tags: list):
+        """
+        Set inner tag, but every child must be on its place.
+        Last tag in the found should be really the last one after that program continues.
+        """
+        n = len(inner_tags)
+        n_ready = 0
+        event = threading.Event()
+        self.children = [None] * n
+
+        def inner(number, text: str):
+            nonlocal self, n, n_ready, event
+            inner_tag = self.__class__(
+                text=text,
+                use_threads=self.Config.use_threads,
+                use_processes=self.Config.use_processes
+            )
+            inner_tag.parent = self
+            self.children[number] = inner_tag
+
+            n_ready += 1
+            if n_ready == n:
+                event.set()
+
+        for idx, tag in enumerate(inner_tags):
+            th = threading.Thread(
+                target=inner,
+                args=(idx, tag)
+            )
+            th.start()
+
+        while not event.wait():
+            pass
+
     def findAll(self, tag_name, **kwargs):
         """
         Find tags on set parameters.

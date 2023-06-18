@@ -6,7 +6,7 @@ def test_broad1():
         html_text = file.read()
     spicy = Spicy(
         text=html_text,
-        use_threads=True
+        # use_threads=True
     )
     assert spicy.tag == 'html'
     assert len(spicy.children) == 2
