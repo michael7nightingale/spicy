@@ -8,24 +8,31 @@ from spicy.tree import Tree
 
 
 class BaseDocument(Tree):
+    """
+    Base document class. Tree contains Tag-nodes
+    """
     tag: str
     tag_type: Type[Tag]
 
     class Config:
+        """
+        Configuration class
+        """
         use_threads = False
         use_processes = False
 
     def __init__(self, text: str,
                  use_threads: bool = False,
                  use_processes: bool = False):
-        Tree.__init__(self)
+        Tree.__init__(self)  # only trick I have to do
         self.Config.use_threads = use_threads
         self.Config.use_processes = use_processes
         self._set_document(text=text)
 
-    def to_text(self, layer: int = 0, tab: bool = True, split: str = "\n"):
-        """Returns the string object of the tag, incuding all children and tabs"""
-        # print(self.children)
+    def toText(self, layer: int = 0, tab: bool = True, split: str = "\n"):
+        """
+        Returns the string object of the tag, including all children and tabs
+        """
         tab = "  " if tab else ""
         text = f"<{self.tag}>{split}"
         for ch in self.children:
@@ -35,6 +42,9 @@ class BaseDocument(Tree):
         return text
 
     def _set_document(self, text: str):
+        """
+        Set document.
+        """
         match_text = self.tag_type._patterns.TAG_PATTERN.value.findall(text)
         tag, attrs, inner = match_text[0]
         self._validate_tag(tag)  # tag validation
@@ -52,6 +62,9 @@ class BaseDocument(Tree):
                 self._set_inner_tag(t)
 
     def _set_inner_tag(self, text: str):
+        """
+        Set sync inner tag.
+        """
         inner_tag = self.tag_type(
             text=text,
             use_threads=self.Config.use_threads,
@@ -61,6 +74,10 @@ class BaseDocument(Tree):
         self.addChild(inner_tag)
 
     def _set_inner_tag_queue(self, inner_tags: list):
+        """
+        Set inner tag, but every child must be on its place.
+        Last tag in the found should be really the last one after that program continues.
+        """
         n = len(inner_tags)
         n_ready = 0
         event = threading.Event()
@@ -90,15 +107,16 @@ class BaseDocument(Tree):
         while not event.wait():
             pass
 
-
-
     def _validate_tag(self, tag: str):
+        """
+        Tag validation.
+        """
         tag = tag.strip()
         if tag != self.tag:
             raise ValueError('HTML tag is required')
 
     def __str__(self):
-        return self.to_text()
+        return self.toText()
 
 
 class BaseADocument(Tree):
@@ -112,8 +130,9 @@ class BaseADocument(Tree):
         await self._set_document(text)
 
     def to_text(self, layer: int = 0, tab: bool = True, split: str = "\n"):
-        """Returns the string object of the tag, incuding all children and tabs"""
-        # print(self.children)
+        """
+        Returns the string object of the tag, including all children and tabs
+        """
         tab = "  " if tab else ""
         text = f"<{self.tag}>{split}"
         for ch in self.children:
@@ -122,6 +141,9 @@ class BaseADocument(Tree):
         return text
 
     async def _set_document(self, text: str):
+        """
+        Set document.
+        """
         match_text = self.tag_type._patterns.TAG_PATTERN.value.findall(text)
         tag, attrs, inner = match_text[0]
         await self._validate_tag(tag)  # tag validation
@@ -134,18 +156,23 @@ class BaseADocument(Tree):
             await asyncio.sleep(0)
 
     async def _set_inner_tag(self, text: str):
+        """
+        Set sync inner tag.
+        """
         inner_tag = self.tag_type()
         await inner_tag.__ainit__(text)
         inner_tag.parent = self
         self.addChild(inner_tag)
 
     async def _validate_tag(self, tag: str):
+        """
+        Tag validation.
+        """
         tag = tag.strip()
         if tag != self.tag:
             raise ValueError('HTML tag is required')
 
     def __str__(self):
         return self.to_text()
-
 
 
