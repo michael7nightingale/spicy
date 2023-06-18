@@ -1,6 +1,8 @@
 import asyncio
 import threading
-import multiprocessing as mp
+from multiprocessing.pool import ThreadPool
+from multiprocessing import Pool, Lock
+from multiprocessing.shared_memory import ShareableList
 
 from spicy.parser.tags.bases import Tag, ATag
 from spicy.tree import Node, Tree
@@ -40,6 +42,7 @@ class HTMLTag(Tag, Node):
 
     @classmethod
     def _find_inner_tags(cls, text: str) -> tuple[list[str], str]:
+        # print(text)
         tag_stack = []
         inner_tags = []
         unclosed_tags = []
@@ -89,12 +92,14 @@ class HTMLTag(Tag, Node):
 
     def _set_tag(self, text):
         FILL_UNSTATED_WITH = None
+        print(1123, text, '\n')
 
         # if parent is None:  # set parent after the simple call
         #     parent = self
 
         try:
             match_text = self._patterns.TAG_PATTERN.value.findall(text)
+            # print(222, match_text)
             tag, attrs, inner = match_text[0]
             self.tag = self.validateTag(tag)     # tag validation
             del tag
@@ -106,12 +111,14 @@ class HTMLTag(Tag, Node):
             self.class_ = self.attrs.get('class', FILL_UNSTATED_WITH)
 
             inner_tags, inner_text = self._find_inner_tags(inner)
+            # print(123123, inner_tags, sep='\n\n')
             self.innerText = inner_text
 
             # decide what task type to user
             if self.Config.use_processes:
-                with mp.Pool() as pool:
-                    pool.map(self._set_inner_tag, inner_tags)
+                lock = Lock()
+                with ThreadPool() as pool:
+                    pool.map(self._set_inner_tag_pool, ((lock, i) for i in inner_tags))
             elif self.Config.use_threads:
                 for t in inner_tags:
                     threading.Thread(target=self._set_inner_tag, args=(t,)).start()
@@ -121,6 +128,7 @@ class HTMLTag(Tag, Node):
         except (IndexError, ):
             ATTRIBUTE_PATTERN = self._patterns.ATTRIBUTE_PATTERN
             match_text = ATTRIBUTE_PATTERN.value.findall(text)
+            # print(123, match_text)
             tag, attrs = match_text[0]
             self.tag = tag
             self.is_closed = False
@@ -130,6 +138,20 @@ class HTMLTag(Tag, Node):
             self.attrs = self.validateAttrs([i[:1] + i[2:] for i in match_attrs])
             self.id = self.attrs.get('id', FILL_UNSTATED_WITH)
             self.class_ = self.attrs.get('class', FILL_UNSTATED_WITH)
+
+    def _set_inner_tag_pool(self, args):
+        lock, text = args
+        lock.acquire()
+        try:
+            inner_tag = self.__class__(
+                text=text,
+                use_threads=self.Config.use_threads,
+                use_processes=self.Config.use_processes
+            )
+            inner_tag.parent = self
+            self.addChild(inner_tag)
+        finally:
+            lock.release()
 
     def findAll(self, tag_name, **kwargs):
         for t in self:

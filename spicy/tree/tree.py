@@ -71,6 +71,7 @@ class Tree(BaseTree):
 
     def addChild(self, child: NodeVar) -> None:
         """Adding new child in list"""
+        print(1929, child.Config.use_processes)
         if isinstance(child, Node):
             self.children.append(child)
         else:
