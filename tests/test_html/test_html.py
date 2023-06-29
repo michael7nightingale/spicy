@@ -25,7 +25,7 @@ def test_broad1():
         background-color: #f0f0f2;
         margin: 0;
         padding: 0;
-        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; 
         
     }
     div {
@@ -47,9 +47,9 @@ def test_broad1():
         }
     }"""
 
-    assert meta1.attrs == {"charset": "utf-8"}
-    assert meta3.attrs == {"name": "viewport", 'content': "width=device-width, initial-scale=1"}
-    assert meta2.attrs == {"http-equiv": "Content-type", "content": "text/html; charset=utf-8"}
+    assert meta1.attributes == {"charset": "utf-8"}
+    assert meta3.attributes == {"name": "viewport", 'content': "width=device-width, initial-scale=1"}
+    assert meta2.attributes == {"http-equiv": "Content-type", "content": "text/html; charset=utf-8"}
     assert len(body.children) == 1
     div, *_ = body.children
     assert len(div.children) == 3
@@ -64,7 +64,7 @@ def test_broad1():
     assert p2.innerText == ""
     a, *_ = p2.children
     assert a.innerText == "More information..."
-    assert a.attrs == {"href": "https://www.iana.org/domains/example"}
+    assert a.attributes == {"href": "https://www.iana.org/domains/example"}
 
 
 def test_comment():

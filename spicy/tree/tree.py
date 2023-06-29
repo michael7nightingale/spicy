@@ -98,4 +98,3 @@ class Tree(BaseTree):
 
             else:
                 return node.parent.children[node_idx + 1]
-
