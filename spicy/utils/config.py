@@ -1,5 +1,5 @@
 from spicy.parser.documents import XMLDocument
-from spicy.parser.documents import HTMLDocument, AHTMLDocument
+from spicy.parser.documents import HTMLDocument
 
 
 DOCTYPES = {
@@ -8,8 +8,8 @@ DOCTYPES = {
 
 }
 
-ASYNC_DOCTYPES = {
-    "html": AHTMLDocument,
-    "xml": XMLDocument,
-
-}
+# ASYNC_DOCTYPES = {
+#     "html": AHTMLDocument,
+#     "xml": XMLDocument,
+#
+# }
