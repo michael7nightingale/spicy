@@ -24,7 +24,6 @@ class BaseNode(ABC):
         else:
             self.children = []
 
-
     @abstractmethod
     def findNext(self, node: Node | None = None,
                  ignore_children: bool = True):

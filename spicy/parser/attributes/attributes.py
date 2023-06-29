@@ -4,7 +4,7 @@ class Attribute:
     def __init__(self, attrs: list[tuple]):
         try:
             self.attrs = dict(attrs)
-        except:
+        except Exception:
             raise ValueError
 
     def toText(self, layer: int = 0, tab: bool = True, split: str = '\n'):
