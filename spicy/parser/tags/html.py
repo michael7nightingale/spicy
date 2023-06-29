@@ -1,13 +1,12 @@
-import asyncio
 import threading
 import multiprocessing as mp
 
-from spicy.parser.tags.bases import Tag, ATag
-from spicy.tree import Node, Tree
+from spicy.parser.tags.bases import Tag
+from spicy.tree import Node
 from spicy.utils.enums import HTMLPatterns
 
 
-attributes_classes: set[str] = {
+UNCLOSED_TAG: set[str] = {
     "meta", "link", "img",
     "path", "base", "hr",
     "input", "br",
@@ -17,10 +16,13 @@ attributes_classes: set[str] = {
 
 class HTMLTag(Tag, Node):
     """HTML tag class."""
-    __slots__ = ("class_", "style", "tag", "innerText", 'attrs', "id", "is_closed")
+    __slots__ = ("className", "style", "tag", "innerText", 'attributes', "id", "isClosed")
     _patterns = HTMLPatterns
 
-    def __init__(self, text: str,
+    def __init__(self,
+                 tag: str | None = None,
+                 text: str | None = None,
+                 isClosed: bool = True,
                  use_threads: bool = False,
                  use_processes: bool = False):
         super().__init__(
@@ -28,9 +30,16 @@ class HTMLTag(Tag, Node):
             use_threads=use_threads,
             use_processes=use_processes
         )
-        self.class_: str
-        self.style: str
-        self._set_tag(text=text)
+        if text is not None:
+            if tag is not None:
+                raise ValueError("Either text or tag is required.")
+            self._setTag(text=text)
+        else:
+            if tag is None:
+                raise ValueError("Either text or tag is required.")
+            self.tag = tag
+        self.className: str | None = None
+        self.isClosed = isClosed
 
     def validateTag(self, tag: str):
         """
@@ -42,7 +51,7 @@ class HTMLTag(Tag, Node):
             raise ValueError("Tag is not valid! (it is empty)")
 
     @classmethod
-    def _find_inner_tags(cls, text: str) -> tuple[list[str], str]:
+    def _findInnerTags(cls, text: str) -> tuple[list[str], str]:
         """
         Find inner tags in text.
         """
@@ -50,6 +59,7 @@ class HTMLTag(Tag, Node):
         inner_tags = []
         unclosed_tags = []
         last_inner_tag = ''
+        from_replace_idx: int = 0
         tag = cls._patterns.INNER_TAG_PATTERN.value.search(text)
         while tag:
             tag_beginning, tag_name = tag.groups()
@@ -57,7 +67,7 @@ class HTMLTag(Tag, Node):
             if '--' in tag_name:
                 text = text.replace(tag_beginning, '', 1)
 
-            elif tag_name in attributes_classes:
+            elif tag_name in UNCLOSED_TAG:
                 last_inner_tag += tag_beginning
                 unclosed_tags.append(tag_beginning)
                 text = text.replace(tag_beginning, '', 1)
@@ -88,56 +98,56 @@ class HTMLTag(Tag, Node):
 
         return inner_tags, text.strip()
 
-    def validateAttrs(self, attrs: list[tuple]):
+    def validateAttributes(self, attrs: list[tuple]):
         """
         Attributes validation.
         """
         try:
             return dict(attrs)
-        except:
+        except Exception:
             raise AttributeError("Attributes are not valid")
 
-    def _set_tag(self, text):
+    def _setTag(self, text):
         """
         Set tag.
         """
         FILL_UNSTATED_WITH = None
         try:
             match_text = self._patterns.TAG_PATTERN.value.findall(text)
-            tag, attrs, inner = match_text[0]
+            tag, attributes, inner = match_text[0]
             self.tag = self.validateTag(tag)  # tag validation
             del tag
-            match_attrs = self._patterns.ATTRS_PATTERN.value.findall(attrs)
-            del attrs
-            self.attrs = self.validateAttrs([i[:1] + i[2:] for i in match_attrs])
-            self.id = self.attrs.get('id', FILL_UNSTATED_WITH)
-            self.class_ = self.attrs.get('class', FILL_UNSTATED_WITH)
-            inner_tags, inner_text = self._find_inner_tags(inner)
-            self.innerText = inner_text
+            match_attributes = self._patterns.ATTRS_PATTERN.value.findall(attributes)
+            del attributes
+            self.attributes = self.validateAttributes([i[:1] + i[2:] for i in match_attributes])
+            self.id = self.attributes.get('id', FILL_UNSTATED_WITH)
+            self.className = self.attributes.get('class', FILL_UNSTATED_WITH)
+            inner_tags, innerText = self._findInnerTags(inner)
+            self.innerText = innerText
             # decide what task type to user
             if self.Config.use_processes:
                 with mp.Pool() as pool:
-                    pool.map(self._set_inner_tag, inner_tags)
+                    pool.map(self._setInnerTag, inner_tags)
             elif self.Config.use_threads:
                 for t in inner_tags:
-                    threading.Thread(target=self._set_inner_tag, args=(t,)).start()
+                    threading.Thread(target=self._setInnerTag, args=(t,)).start()
             else:
                 for t in inner_tags:
-                    self._set_inner_tag(text=t)
+                    self._setInnerTag(text=t)
 
         except (IndexError, ):
             ATTRIBUTE_PATTERN = self._patterns.ATTRIBUTE_PATTERN
             match_text = ATTRIBUTE_PATTERN.value.findall(text)
-            tag, attrs = match_text[0]
+            tag, attributes = match_text[0]
             self.tag = tag
-            self.is_closed = False
-            match_attrs = self._patterns.ATTRS_PATTERN.value.findall(attrs)
-            del attrs
-            self.attrs = self.validateAttrs([i[:1] + i[2:] for i in match_attrs])
-            self.id = self.attrs.get('id', FILL_UNSTATED_WITH)
-            self.class_ = self.attrs.get('class', FILL_UNSTATED_WITH)
+            self.isClosed = True
+            match_attributes = self._patterns.ATTRS_PATTERN.value.findall(attributes)
+            del attributes
+            self.attributes = self.validateAttributes([i[:1] + i[2:] for i in match_attributes])
+            self.id = self.attributes.get('id', FILL_UNSTATED_WITH)
+            self.className = self.attributes.get('class', FILL_UNSTATED_WITH)
 
-    def _set_inner_tag_queue(self, inner_tags: list):
+    def _setInnerTagQueue(self, inner_tags: list):
         """
         Set inner tag, but every child must be on its place.
         Last tag in the found should be really the last one after that program continues.
@@ -186,124 +196,153 @@ class HTMLTag(Tag, Node):
                     if all(t.attrs.get(i) == kwargs[i] for i in kwargs):
                         yield t
 
-
-class AHTMLTag(ATag, Node):
-    """
-    HTML tag class.
-    """
-    __slots__ = ("class_", "style", "tag", "innerText", 'attrs', "id", "is_closed")
-    _patterns = HTMLPatterns
-
-    def __init__(self):
-        super().__init__()
-        self.class_: str
-        self.style: str
-
-    async def __ainit__(self, text: str):
-        """
-        Костыль для асинхронности
-        """
-        await self._set_tag(text)
-
-    async def validateTag(self, tag: str):
-        """
-        Tag validation.
-        """
-        if tag:
-            return tag
+    def toText(self, layer: int = 0, tab: bool = True, split: str = "\n"):
+        attributes = " ".join((f"{name}='{val}'" for name, val in self.attributes.items()))
+        tab = "  " if tab else ""
+        if self.isClosed:
+            to_cont = split if self.children else ""
+            text = tab * layer + f"<{self.tag} {attributes}>{self.innerText}{to_cont}"
         else:
-            raise ValueError("Tag is not valid! (it is empty)")
-
-    @classmethod
-    async def _find_inner_tags(cls, text: str) -> tuple[list[str], str]:
-        """
-        Find inner tags in text.
-        """
-        tag_stack = []
-        inner_tags = []
-        unclosed_tags = []
-        last_inner_tag = ''
-        tag = cls._patterns.INNER_TAG_PATTERN.value.search(text)
-        while tag:
-            tag_beginning, tag_name = tag.groups()
-            idx = text.index(tag_beginning)
-            if tag_name in attributes_classes:
-                last_inner_tag += tag_beginning
-                unclosed_tags.append(tag_beginning)
-                text = text.replace(tag_beginning, '', 1)
-            elif '/' in tag_name:
-                last_inner_tag += text[from_replace_idx:idx + len(tag_beginning)]
-                text = text[:from_replace_idx] + text[idx + len(tag_beginning):]
-                last_stack_tag = tag_stack[-1]
-            else:
-                if tag_name.replace('/', '') == last_stack_tag:
-                        tag_stack.pop()
-                else:
-                    from_replace_idx = idx
-                    last_inner_tag += tag_beginning
-                    text = text.replace(tag_beginning, '', 1)
-                    tag_stack.append(tag_name)
-                if not tag_stack:
-                    inner_tags.append(last_inner_tag)
-                    last_inner_tag = ''
-            tag = cls._patterns.INNER_TAG_PATTERN.value.search(text)
-        return inner_tags, text.strip()
-
-    async def validateAttrs(self, attrs: list[tuple]):
-        """
-        Attributes validation.
-        """
-        try:
-            return dict(attrs)
-        except:
-            raise AttributeError("Attributes are not valid")
-
-    async def _set_tag(self, text):
-        """
-        Set tag.
-        """
-        FILL_UNSTATED_WITH = None
-        if text.count('<') > 1:
-            match_text = self._patterns.TAG_PATTERN.value.findall(text)
-            tag, attrs, inner = match_text[0]
-            self.tag = await self.validateTag(tag)  # tag validation
-            del tag
-            match_attrs = self._patterns.ATTRS_PATTERN.value.findall(attrs)
-            del attrs
-            self.attrs = await self.validateAttrs([i[:1] + i[2:] for i in match_attrs])
-            self.id = self.attrs.get('id', FILL_UNSTATED_WITH)
-            self.class_ = self.attrs.get('class', FILL_UNSTATED_WITH)
-            inner_tags, inner_text = await self._find_inner_tags(inner)
-            self.innerText = inner_text
-            # decide what task type to user
-            for t in inner_tags:
-                await self._set_tag(t)
-                await asyncio.sleep(0)
-        else:
-            ATTRIBUTE_PATTERN = self._patterns.ATTRIBUTE_PATTERN
-            match_text = ATTRIBUTE_PATTERN.value.findall(text)
-            tag, attrs = match_text[0]
-            self.tag = tag
-            self.is_closed = False
-            match_attrs = self._patterns.ATTRS_PATTERN.value.findall(attrs)
-            del attrs
-            self.attrs = await self.validateAttrs([i[:1] + i[2:] for i in match_attrs])
-            self.id = self.attrs.get('id', FILL_UNSTATED_WITH)
-            self.class_ = self.attrs.get('class', FILL_UNSTATED_WITH)
-
-    async def findAll(self, tag_name, **kwargs):
-        """
-        Find tags on set parameters.
-        """
-        for t in self:
-            if t.tag == tag_name:
-                if not kwargs:
-                    yield t
-                else:
-                    if 'class_' in kwargs:
-                        kwargs['class'] = kwargs['class_']
-                        del kwargs['class_']
-                    if all(t.attrs.get(i) == kwargs[i] for i in kwargs):
-                        yield t
+            text = tab * layer + f"<{self.tag} {attributes}>{split}"
+        for ch in self.children:
+            text += ch.toText(layer + 1, tab, split)
+        if self.isClosed:
+            text += tab * layer + f"</{self.tag}>{split}"
+        return text
 
 
+# class AHTMLTag(ATag, Node):
+#     """
+#     HTML tag class.
+#     """
+#     __slots__ = ("class_", "style", "tag", "innerText", 'attrs', "id", "is_closed")
+#     _patterns = HTMLPatterns
+#
+#     def __init__(self,
+#                  use_threads: bool = False,
+#                  use_processes: bool = False):
+#         super().__init__(
+#             use_threads=use_threads,
+#             use_processes=use_processes
+#         )
+#         self.class_: str
+#         self.style: str
+#
+#     async def __ainit__(self, text: str):
+#         """
+#         Костыль для асинхронности
+#         """
+#         await self._set_tag(text)
+#
+#     async def validateTag(self, tag: str):
+#         """
+#         Tag validation.
+#         """
+#         if tag:
+#             return tag
+#         else:
+#             raise ValueError("Tag is not valid! (it is empty)")
+#
+#     @classmethod
+#     async def _find_inner_tags(cls, text: str) -> tuple[list[str], str]:
+#         """
+#         Find inner tags in text.
+#         """
+#         tag_stack = []
+#         inner_tags = []
+#         unclosed_tags = []
+#         last_inner_tag = ''
+#         tag = cls._patterns.INNER_TAG_PATTERN.value.search(text)
+#         while tag:
+#             tag_beginning, tag_name = tag.groups()
+#             idx = tag.start()
+#             if '--' in tag_name:
+#                 text = text.replace(tag_beginning, '', 1)
+#
+#             elif tag_name in UNCLOSED_TAG:
+#                 last_inner_tag += tag_beginning
+#                 unclosed_tags.append(tag_beginning)
+#                 text = text.replace(tag_beginning, '', 1)
+#
+#             elif '/' in tag_name:
+#                 last_inner_tag += text[from_replace_idx:idx + len(tag_beginning)]
+#                 text = text[:from_replace_idx] + text[idx + len(tag_beginning):]
+#                 last_stack_tag = tag_stack[-1]
+#                 if '--' in tag_name:
+#                     if '!--' in last_stack_tag and last_stack_tag.replace('!--', '') == tag_name.replace('--',
+#                                                                                                          '').lstrip(
+#                             '/'):
+#                         tag_stack.pop()
+#                 else:
+#                     if tag_name.replace('/', '') == last_stack_tag:
+#                         tag_stack.pop()
+#             else:
+#                 from_replace_idx = idx
+#                 last_inner_tag += tag_beginning
+#                 text = text.replace(tag_beginning, '', 1)
+#                 tag_stack.append(tag_name)
+#
+#             if not tag_stack:
+#                 inner_tags.append(last_inner_tag)
+#                 last_inner_tag = ''
+#
+#             tag = cls._patterns.INNER_TAG_PATTERN.value.search(text)
+#
+#         return inner_tags, text.strip()
+#
+#     async def validateAttrs(self, attrs: list[tuple]):
+#         """
+#         Attributes validation.
+#         """
+#         try:
+#             return dict(attrs)
+#         except:
+#             raise AttributeError("Attributes are not valid")
+#
+#     async def _set_tag(self, text):
+#         """
+#         Set tag.
+#         """
+#         FILL_UNSTATED_WITH = None
+#         if text.count('<') > 1:
+#             match_text = self._patterns.TAG_PATTERN.value.findall(text)
+#             tag, attrs, inner = match_text[0]
+#             self.tag = await self.validateTag(tag)  # tag validation
+#             del tag
+#             match_attrs = self._patterns.ATTRS_PATTERN.value.findall(attrs)
+#             del attrs
+#             self.attrs = await self.validateAttrs([i[:1] + i[2:] for i in match_attrs])
+#             self.id = self.attrs.get('id', FILL_UNSTATED_WITH)
+#             self.class_ = self.attrs.get('class', FILL_UNSTATED_WITH)
+#             inner_tags, inner_text = await self._find_inner_tags(inner)
+#             self.innerText = inner_text
+#             # decide what task type to user
+#             for t in inner_tags:
+#                 await self._set_tag(t)
+#                 await asyncio.sleep(0)
+#         else:
+#             ATTRIBUTE_PATTERN = self._patterns.ATTRIBUTE_PATTERN
+#             match_text = ATTRIBUTE_PATTERN.value.findall(text)
+#             tag, attrs = match_text[0]
+#             self.tag = tag
+#             self.is_closed = False
+#             match_attrs = self._patterns.ATTRS_PATTERN.value.findall(attrs)
+#             del attrs
+#             self.attrs = await self.validateAttrs([i[:1] + i[2:] for i in match_attrs])
+#             self.id = self.attrs.get('id', FILL_UNSTATED_WITH)
+#             self.class_ = self.attrs.get('class', FILL_UNSTATED_WITH)
+#
+#     async def findAll(self, tag_name, **kwargs):
+#         """
+#         Find tags on set parameters.
+#         """
+#         for t in self:
+#             if t.tag == tag_name:
+#                 if not kwargs:
+#                     yield t
+#                 else:
+#                     if 'class_' in kwargs:
+#                         kwargs['class'] = kwargs['class_']
+#                         del kwargs['class_']
+#                     if all(t.attrs.get(i) == kwargs[i] for i in kwargs):
+#                         yield t

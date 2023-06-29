@@ -52,7 +52,7 @@ class XMLTag(Tag, Node):
         inner_tags = []
         last_inner_tag = ''
         tag = cls._patterns.INNER_TAG_PATTERN.value.search(text)
-
+        from_replace_idx: int = 0
         while tag:
             tag_beginning, tag_name = tag.groups()
             idx = text.index(tag_beginning)
@@ -82,10 +82,10 @@ class XMLTag(Tag, Node):
         else:
             raise ValueError("Tag is not valid! (it is empty)")
 
-    def validateAttrs(self, attrs: list[tuple]):
+    def validateAttributes(self, attrs: list[tuple]):
         try:
             return dict(attrs)
-        except:
+        except Exception:
             raise AttributeError("Attributes are not valid")
 
     def findAll(self, tag_name, **kwargs):
