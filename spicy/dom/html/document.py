@@ -1,5 +1,5 @@
-from spicy.parser.tags import HTMLTag
-from spicy.parser.documents.bases import BaseDocument
+from .tag import HTMLTag
+from ..base.document import BaseDocument
 
 
 class HTMLDocument(BaseDocument):
@@ -12,9 +12,11 @@ class HTMLDocument(BaseDocument):
                  use_processes: bool = False):
         self.version: int
         self.charset: str
-        super().__init__(text,
-                         use_threads=use_threads,
-                         use_processes=use_processes)
+        super().__init__(
+            text,
+            use_threads=use_threads,
+            use_processes=use_processes
+        )
 
 
 # class AHTMLDocument(BaseADocument):

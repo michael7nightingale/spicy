@@ -2,7 +2,7 @@ import threading
 import multiprocessing as mp
 from typing import Type
 
-from spicy.parser.tags.bases import Tag
+from ..base.tag import Tag
 from spicy.tree import Tree
 
 
@@ -71,7 +71,7 @@ class BaseDocument(Tree):
             use_processes=self.Config.use_processes
         )
         inner_tag.parent = self
-        self.addChild(inner_tag)
+        self.appendChild(inner_tag)
 
     def _setInnerTagQueue(self, inner_tags: list):
         """
@@ -114,6 +114,11 @@ class BaseDocument(Tree):
         tag = tag.strip()
         if tag != self.tag:
             raise ValueError('HTML tag is required')
+
+    def getElementById(self, id_: str):
+        for ch in self:
+            if ch.id == id_:
+                return ch
 
     def __str__(self):
         return self.toText()

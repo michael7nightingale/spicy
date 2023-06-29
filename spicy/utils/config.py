@@ -1,5 +1,5 @@
-from spicy.parser.documents import XMLDocument
-from spicy.parser.documents import HTMLDocument
+from spicy.dom.xml.document import XMLDocument
+from spicy.dom.html.document import HTMLDocument
 
 
 DOCTYPES = {

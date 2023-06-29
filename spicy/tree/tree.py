@@ -56,7 +56,7 @@ class Node(BaseNode):
 
         return node.parent.children[node_idx + 1]
 
-    def addChild(self, child: NodeVar) -> None:
+    def appendChild(self, child: NodeVar) -> None:
         """Adding new child in list"""
         if isinstance(child, Node):
             self.children.append(child)
@@ -69,9 +69,8 @@ class Tree(BaseTree):
     Tree class. Has no parents. Only children nodes.
     """
 
-    def addChild(self, child: NodeVar) -> None:
+    def appendChild(self, child: NodeVar) -> None:
         """Adding new child in list"""
-        print(1929, child.Config.use_processes)
         if isinstance(child, Node):
             self.children.append(child)
         else:

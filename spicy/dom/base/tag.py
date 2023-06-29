@@ -34,6 +34,9 @@ class Tag(ABC):
         self.Config.use_processes = use_processes
         super().__init__()
 
+    def setAttribute(self, key: str, value: str) -> None:
+        self.attributes[key] = value
+
     @abstractmethod
     def validateTag(self, tag: Any) -> Any:
         pass
@@ -55,7 +58,7 @@ class Tag(ABC):
     def _setInnerTag(self, text: str):
         child = self.__class__(text=text)
         child.parent = self
-        self.addChild(child)    # from Node
+        self.appendChild(child)    # from Node
 
     @abstractmethod
     def findAll(self, tag_name, **kwargs):

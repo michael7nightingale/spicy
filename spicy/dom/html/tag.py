@@ -1,9 +1,9 @@
 import threading
 import multiprocessing as mp
 
-from spicy.parser.tags.bases import Tag
+from ..base.tag import Tag
 from spicy.tree import Node
-from spicy.utils.enums import HTMLPatterns
+from .enum_ import HTMLPatterns
 
 
 UNCLOSED_TAG: set[str] = {
@@ -346,3 +346,11 @@ class HTMLTag(Tag, Node):
 #                         del kwargs['class_']
 #                     if all(t.attrs.get(i) == kwargs[i] for i in kwargs):
 #                         yield t
+
+
+def createElement(tag: str, **attributes) -> HTMLTag:
+    """Create html tag element."""
+    html_tag = HTMLTag(tag=tag)
+    for k, v in attributes.items():
+        html_tag.setAttribute(k, v)
+    return html_tag
