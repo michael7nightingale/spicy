@@ -8,9 +8,10 @@ from spicy.utils import exceptions
 class Tag(ABC):
     """Base tag class."""
     __slots__ = ("tag", "innerText", 'attrs', "id")
-    _patterns: Enum
+    _patterns: Enum     # enum of re-patterns
 
     class Config:
+        """Inner class for configuration of text-processing."""
         use_threads = False
         use_processes = False
 
@@ -35,7 +36,23 @@ class Tag(ABC):
         super().__init__()
 
     def setAttribute(self, key: str, value: str) -> None:
+        """Set a new attribute to a tag attributes."""
         self.attributes[key] = value
+
+    def removeAttribute(self, key: str, allow_null: bool = False) -> None:
+        """Remove an attribute from tag attributes."""
+        if allow_null:
+            if key in self.attributes:
+                self.attributes.pop(key)
+        else:
+            self.attributes.pop(key)
+
+    def getAttribute(self, key: str, allow_null: bool = False) -> str | None:
+        """Get an attribute from tag attributes."""
+        if allow_null:
+            return self.attributes.get(key)
+        else:
+            return self.attributes[key]
 
     @abstractmethod
     def validateTag(self, tag: Any) -> Any:
@@ -55,27 +72,27 @@ class Tag(ABC):
         pass
 
     # @abstractmethod
-    def _setInnerTag(self, text: str):
+    def _setInnerTag(self, text: str) -> None:
         child = self.__class__(text=text)
         child.parent = self
-        self.appendChild(child)    # from Node
+        self.appendChild(child)  # from Node
 
     @abstractmethod
     def findAll(self, tag_name, **kwargs):
         pass
 
     def __iter__(self):
-        return super().__iter__()
+        return super().__iter__()  # from Node
 
     def __len__(self):
-        return super().__len__()
+        return super().__len__()  # from Node
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.toText()
 
     @abstractmethod
-    def toText(self, layer: int = 0, tab: bool = True, split: str = "\n"):
-        """Returns the string object of the tag, incuding all children and tabs"""
+    def toText(self, layer: int = 0, tab: bool = True, split: str = "\n") -> str:
+        """Returns the string object of the tag, including all children and tabs"""
         pass
 
     def __repr__(self) -> str:

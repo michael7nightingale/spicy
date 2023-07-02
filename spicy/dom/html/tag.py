@@ -116,12 +116,18 @@ class HTMLTag(Tag, Node):
             match_text = self._patterns.TAG_PATTERN.value.findall(text)
             tag, attributes, inner = match_text[0]
             self.tag = self.validateTag(tag)  # tag validation
-            del tag
+
             match_attributes = self._patterns.ATTRS_PATTERN.value.findall(attributes)
-            del attributes
             self.attributes = self.validateAttributes([i[:1] + i[2:] for i in match_attributes])
+
             self.id = self.attributes.get('id', FILL_UNSTATED_WITH)
+            if self.id != FILL_UNSTATED_WITH:
+                self.attributes.pop('id')
+
             self.className = self.attributes.get('class', FILL_UNSTATED_WITH)
+            if self.className != FILL_UNSTATED_WITH:
+                self.attributes.pop('class')
+
             inner_tags, innerText = self._findInnerTags(inner)
             self.innerText = innerText
             # decide what task type to user
@@ -129,8 +135,7 @@ class HTMLTag(Tag, Node):
                 with mp.Pool() as pool:
                     pool.map(self._setInnerTag, inner_tags)
             elif self.Config.use_threads:
-                for t in inner_tags:
-                    threading.Thread(target=self._setInnerTag, args=(t,)).start()
+                self._setInnerTagQueue(inner_tags)
             else:
                 for t in inner_tags:
                     self._setInnerTag(text=t)
@@ -140,9 +145,8 @@ class HTMLTag(Tag, Node):
             match_text = ATTRIBUTE_PATTERN.value.findall(text)
             tag, attributes = match_text[0]
             self.tag = tag
-            self.isClosed = True
+            self.isClosed = False
             match_attributes = self._patterns.ATTRS_PATTERN.value.findall(attributes)
-            del attributes
             self.attributes = self.validateAttributes([i[:1] + i[2:] for i in match_attributes])
             self.id = self.attributes.get('id', FILL_UNSTATED_WITH)
             self.className = self.attributes.get('class', FILL_UNSTATED_WITH)
@@ -152,12 +156,13 @@ class HTMLTag(Tag, Node):
         Set inner tag, but every child must be on its place.
         Last tag in the found should be really the last one after that program continues.
         """
-        n = len(inner_tags)
-        n_ready = 0
-        event = threading.Event()
-        self.children = [None] * n
+        n = len(inner_tags)  # amount of tags
+        n_ready = 0    # amount of tags were already set
+        event = threading.Event()   # event synchronizer
+        self.children = [None] * n  # list of children
 
         def inner(number, text: str):
+            """Function to work in thread."""
             nonlocal self, n, n_ready, event
             inner_tag = self.__class__(
                 text=text,
@@ -172,18 +177,19 @@ class HTMLTag(Tag, Node):
                 event.set()
 
         for idx, tag in enumerate(inner_tags):
+            # each child-tag is to be on its place (idx) in children list
             th = threading.Thread(
                 target=inner,
                 args=(idx, tag)
             )
             th.start()
 
-        while not event.wait():
+        while not event.wait():  # wait for last tag to set up
             pass
 
     def findAll(self, tag_name, **kwargs):
         """
-        Find tags on set parameters.
+        Find tags on set parameters. Generator function.
         """
         for t in self:
             if t.tag == tag_name:
@@ -197,6 +203,9 @@ class HTMLTag(Tag, Node):
                         yield t
 
     def toText(self, layer: int = 0, tab: bool = True, split: str = "\n"):
+        """
+        Represents html-tag objects as a text. Called by `__str__()`.
+        """
         attributes = " ".join((f"{name}='{val}'" for name, val in self.attributes.items()))
         tab = "  " if tab else ""
         if self.isClosed:
