@@ -7,7 +7,7 @@ from spicy.utils import exceptions
 
 class Tag(ABC):
     """Base tag class."""
-    __slots__ = ("tag", "innerText", 'attrs', "id")
+    __slots__ = ("tag", "innerText", 'attributes', "id")
     _patterns: Enum     # enum of re-patterns
 
     class Config:
@@ -55,20 +55,20 @@ class Tag(ABC):
             return self.attributes[key]
 
     @abstractmethod
-    def validateTag(self, tag: Any) -> Any:
+    def validateTag(self, tag: Any) -> str:
         pass
 
     @abstractmethod
-    def validateAttributes(self, attrs: Any) -> Any:
+    def validateAttributes(self, attrs: Any) -> str:
         pass
 
     @abstractmethod
-    def _setTag(self, text: Any) -> Any:
+    def _setTag(self, text: Any) -> None:
         pass
 
     @classmethod
     @abstractmethod
-    def _findInnerTags(cls, text: Any) -> Any:
+    def _findInnerTags(cls, text: Any) -> list:
         pass
 
     # @abstractmethod
@@ -78,7 +78,19 @@ class Tag(ABC):
         self.appendChild(child)  # from Node
 
     @abstractmethod
-    def findAll(self, tag_name, **kwargs):
+    def findAll(self, *args, **kwargs) -> list:
+        pass
+
+    @abstractmethod
+    def findIter(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def findFirst(self, *args, **kwargs) -> "Tag":
+        pass
+
+    @abstractmethod
+    def findLast(self, *args, **kwargs) -> "Tag":
         pass
 
     def __iter__(self):

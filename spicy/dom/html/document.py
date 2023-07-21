@@ -42,6 +42,30 @@ class HTMLDocument(BaseDocument):
                 result.append(el)
         return result
 
+    def findFirst(self, tag_name, className: str | None = None, **kwargs) -> HTMLTag | None:
+        for el in self.iterChildren():
+            if el.tag == tag_name:
+                if className is not None:
+                    if el.className != className:
+                        continue
+                if kwargs is not None:
+                    if not all(kwargs[k] == self.attributes.get(k) for k in kwargs):
+                        continue
+                return el
+
+    def findLast(self, tag_name, className: str | None = None, **kwargs) -> HTMLTag | None:
+        result = None
+        for el in self.iterChildren():
+            if el.tag == tag_name:
+                if className is not None:
+                    if el.className != className:
+                        continue
+                if kwargs is not None:
+                    if not all(kwargs[k] == self.attributes.get(k) for k in kwargs):
+                        continue
+                result = el
+        return result
+
 
 # class AHTMLDocument(BaseADocument):
 #     __slots__ = ("version", "charset")

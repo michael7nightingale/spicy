@@ -74,7 +74,7 @@ class BaseDocument(Tree):
         inner_tag.parent = self
         self.appendChild(inner_tag)
 
-    def _setInnerTagQueue(self, inner_tags: list):
+    def _setInnerTagQueue(self, inner_tags: list) -> None:
         """
         Set inner tag, but every child must be on its place.
         Last tag in the found should be really the last one after that program continues.
@@ -108,7 +108,7 @@ class BaseDocument(Tree):
         while not event.wait():
             pass
 
-    def _validateTag(self, tag: str):
+    def _validateTag(self, tag: str) -> str:
         """
         Tag validation.
         """
@@ -116,17 +116,25 @@ class BaseDocument(Tree):
         if tag != self.tag:
             raise ValueError('HTML tag is required')
 
-    def getElementById(self, id_: str):
+    def getElementById(self, id_: str) -> Tag | None:
         for ch in self.iterChildren():
             if ch.id == id_:
                 return ch
+
+    @abstractmethod
+    def findAll(self, *args, **kwargs) -> list:
+        pass
 
     @abstractmethod
     def findIter(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def findAll(self, *args, **kwargs) -> list:
+    def findFirst(self, *args, **kwargs) -> Tag:
+        pass
+
+    @abstractmethod
+    def findLast(self, *args, **kwargs) -> Tag:
         pass
 
     def __str__(self):
