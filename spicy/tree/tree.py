@@ -29,6 +29,8 @@ class Node(BaseNode):
                 return node.children[0]
 
         # get index of the node in parent  children`s list
+        # if node.__class__.__name__ == "HTMLDocument":
+        #     print(123, dir(node))
         node_idx: int | None = node.findIndex()
         if node_idx is None:
             return None     # incorrect data or node is the most super
@@ -62,6 +64,11 @@ class Node(BaseNode):
             self.children.append(child)
         else:
             raise ValueError("Node child must by Node instance")
+
+    def iterChildren(self):
+        yield self
+        for ch in self.children:
+            yield from ch.iterChildren()
 
 
 class Tree(BaseTree):
@@ -97,3 +104,10 @@ class Tree(BaseTree):
 
             else:
                 return node.parent.children[node_idx + 1]
+
+    def findIndex(self):
+        return None
+
+    def iterChildren(self):
+        for ch in self.children:
+            yield from ch.iterChildren()

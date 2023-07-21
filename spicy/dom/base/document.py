@@ -1,5 +1,6 @@
 import threading
 import multiprocessing as mp
+from abc import abstractmethod
 from typing import Type
 
 from ..base.tag import Tag
@@ -29,7 +30,7 @@ class BaseDocument(Tree):
         if text is not None:
             self._setDocument(text=text)
 
-    def toText(self, layer: int = 0, tab: bool = True, split: str = "\n"):
+    def toText(self, layer: int = 0, tab: bool = True, split: str = "\n") -> str:
         """
         Returns the string object of the tag, including all children and tabs
         """
@@ -41,7 +42,7 @@ class BaseDocument(Tree):
         text += f"</{self.tag}>{split}"
         return text
 
-    def _setDocument(self, text: str):
+    def _setDocument(self, text: str) -> None:
         """
         Set document.
         """
@@ -61,7 +62,7 @@ class BaseDocument(Tree):
             for t in inner_tags:
                 self._setInnerTag(t)
 
-    def _setInnerTag(self, text: str):
+    def _setInnerTag(self, text: str) -> None:
         """
         Set sync inner tag.
         """
@@ -116,9 +117,17 @@ class BaseDocument(Tree):
             raise ValueError('HTML tag is required')
 
     def getElementById(self, id_: str):
-        for ch in self:
+        for ch in self.iterChildren():
             if ch.id == id_:
                 return ch
+
+    @abstractmethod
+    def findIter(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def findAll(self, *args, **kwargs) -> list:
+        pass
 
     def __str__(self):
         return self.toText()

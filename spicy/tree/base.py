@@ -68,6 +68,10 @@ class BaseTree(ABC):
     def findNext(self, node, ignore_children: bool = True):
         pass
 
+    @abstractmethod
+    def findIndex(self, node) -> int:
+        pass
+
     def __iter__(self):
         now = self
         while now is not None:
