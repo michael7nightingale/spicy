@@ -30,6 +30,8 @@ class HTMLTag(Tag, Node):
             use_threads=use_threads,
             use_processes=use_processes
         )
+        self.isClosed = isClosed
+        self.className: str | None = None
         if text is not None:
             if tag is not None:
                 raise ValueError("Either text or tag is required.")
@@ -38,8 +40,6 @@ class HTMLTag(Tag, Node):
             if tag is None:
                 raise ValueError("Either text or tag is required.")
             self.tag = tag
-        self.className: str | None = None
-        self.isClosed = isClosed
 
     def validateTag(self, tag: str):
         """
@@ -79,7 +79,7 @@ class HTMLTag(Tag, Node):
                 if '--' in tag_name:
                     if '!--' in last_stack_tag and last_stack_tag.replace('!--', '') == tag_name.replace('--',
                                                                                                          '').lstrip(
-                            '/'):
+                        '/'):
                         tag_stack.pop()
                 else:
                     if tag_name.replace('/', '') == last_stack_tag:
@@ -187,20 +187,29 @@ class HTMLTag(Tag, Node):
         while not event.wait():  # wait for last tag to set up
             pass
 
-    def findAll(self, tag_name, **kwargs):
-        """
-        Find tags on set parameters. Generator function.
-        """
-        for t in self:
-            if t.tag == tag_name:
-                if not kwargs:
-                    yield t
-                else:
-                    if 'class_' in kwargs:
-                        kwargs['class'] = kwargs['class_']
-                        del kwargs['class_']
-                    if all(t.attrs.get(i) == kwargs[i] for i in kwargs):
-                        yield t
+    def findIter(self, tag_name, className: str | None = None, **kwargs):
+        for el in self.iterChildren():
+            if el.tag == tag_name:
+                if className is not None:
+                    if el.className != className:
+                        continue
+                if kwargs is not None:
+                    if not all(kwargs[k] == self.attributes.get(k) for k in kwargs):
+                        continue
+                yield el
+
+    def findAll(self, tag_name, className: str | None = None, **kwargs) -> list:
+        result = []
+        for el in self.iterChildren():
+            if el.tag == tag_name:
+                if className is not None:
+                    if el.className != className:
+                        continue
+                if kwargs is not None:
+                    if not all(kwargs[k] == self.attributes.get(k) for k in kwargs):
+                        continue
+                result.append(el)
+        return result
 
     def toText(self, layer: int = 0, tab: bool = True, split: str = "\n"):
         """

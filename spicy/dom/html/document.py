@@ -18,6 +18,30 @@ class HTMLDocument(BaseDocument):
             use_processes=use_processes
         )
 
+    def findIter(self, tag_name, className: str | None = None, **kwargs):
+        for el in self.iterChildren():
+            if el.tag == tag_name:
+                if className is not None:
+                    if el.className != className:
+                        continue
+                if kwargs is not None:
+                    if not all(i in self.attributes.items() for i in kwargs.items()):
+                        continue
+                yield el
+
+    def findAll(self, tag_name, className: str | None = None, **kwargs) -> list:
+        result = []
+        for el in self.iterChildren():
+            if el.tag == tag_name:
+                if className is not None:
+                    if el.className != className:
+                        continue
+                if kwargs is not None:
+                    if not all(i in self.attributes.items() for i in kwargs.items()):
+                        continue
+                result.append(el)
+        return result
+
 
 # class AHTMLDocument(BaseADocument):
 #     __slots__ = ("version", "charset")
