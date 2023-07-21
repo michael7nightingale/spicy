@@ -1,5 +1,5 @@
-from spicy.parser.tags import XMLTag
-from spicy.parser.documents.bases import BaseDocument
+from .tag import XMLTag
+from ..base.document import BaseDocument
 
 
 class XMLDocument(BaseDocument):
@@ -9,5 +9,3 @@ class XMLDocument(BaseDocument):
 
     def __init__(self, text: str):
         super().__init__(text)
-
-        # super calls _set_tag() before

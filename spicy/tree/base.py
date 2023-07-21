@@ -24,7 +24,6 @@ class BaseNode(ABC):
         else:
             self.children = []
 
-
     @abstractmethod
     def findNext(self, node: Node | None = None,
                  ignore_children: bool = True):
@@ -67,6 +66,10 @@ class BaseTree(ABC):
 
     @abstractmethod
     def findNext(self, node, ignore_children: bool = True):
+        pass
+
+    @abstractmethod
+    def findIndex(self, node) -> int:
         pass
 
     def __iter__(self):

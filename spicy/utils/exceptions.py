@@ -8,7 +8,7 @@ class SpicyException(Exception):
 
 class DoctypeException(SpicyException):
     """Invalid doctype: _. """
-    def __init__(self, message = None, doctype: str = None):
+    def __init__(self, message=None, doctype: str = None):
         if message is None:
             message = self.__doc__
         if doctype is not None:
@@ -20,5 +20,5 @@ class TreeError(SpicyException):
     """Error while building tree"""
 
 
-
-
+class InitTagError(SpicyException):
+    """Either text or tag required."""

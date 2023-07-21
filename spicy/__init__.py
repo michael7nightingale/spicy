@@ -1,5 +1,4 @@
-# from spicy.parser.documents.bases import BaseDocument
-from spicy.utils.config import DOCTYPES, ASYNC_DOCTYPES
+from spicy.utils.config import DOCTYPES
 from spicy.utils.exceptions import DoctypeException
 
 
@@ -25,22 +24,22 @@ def Spicy(text: str,
     )
 
 
-async def ASpicy(text: str,
-           doctype: str = 'html',
-           use_threads: bool = False):
-    """
-     Async version of Spicy.
-    """
-    doctype = doctype.strip().lower()
-    if doctype not in ASYNC_DOCTYPES:  # no matter in which doctype dict, keys are similar
-        raise DoctypeException(doctype=doctype)
+# async def ASpicy(text: str,
+#            doctype: str = 'html',
+#            use_threads: bool = False):
+#     """
+#      Async version of Spicy.
+#     """
+#     doctype = doctype.strip().lower()
+#     if doctype not in ASYNC_DOCTYPES:  # no matter in which doctype dict, keys are similar
+#         raise DoctypeException(doctype=doctype)
+#
+#     aspicy = ASYNC_DOCTYPES[doctype]()
+#     await aspicy.__ainit__(text)
+#     return aspicy
 
-    aspicy = ASYNC_DOCTYPES[doctype]()
-    await aspicy.__ainit__(text)
-    return aspicy
-
-async def async_read(filename: str):
-    pass
+# async def async_read(filename: str):
+    # pass
 
 
 def read(filename: str):

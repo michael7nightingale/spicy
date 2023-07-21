@@ -1,12 +1,11 @@
 from spicy import Spicy
 
 
-def test_broad1():
-    with open("../docs/html/test_broad1.html") as file:
+def test_main_functions():
+    with open("tests/docs/html/test_broad1.html") as file:
         html_text = file.read()
     spicy = Spicy(
         text=html_text,
-        # use_threads=True
     )
     assert spicy.tag == 'html'
     assert len(spicy.children) == 2
@@ -47,9 +46,9 @@ def test_broad1():
         }
     }"""
 
-    assert meta1.attrs == {"charset": "utf-8"}
-    assert meta3.attrs == {"name": "viewport", 'content': "width=device-width, initial-scale=1"}
-    assert meta2.attrs == {"http-equiv": "Content-type", "content": "text/html; charset=utf-8"}
+    assert meta1.attributes == {"charset": "utf-8"}
+    assert meta3.attributes == {"name": "viewport", 'content': "width=device-width, initial-scale=1"}
+    assert meta2.attributes == {"http-equiv": "Content-type", "content": "text/html; charset=utf-8"}
     assert len(body.children) == 1
     div, *_ = body.children
     assert len(div.children) == 3
@@ -64,30 +63,42 @@ def test_broad1():
     assert p2.innerText == ""
     a, *_ = p2.children
     assert a.innerText == "More information..."
-    assert a.attrs == {"href": "https://www.iana.org/domains/example"}
+    assert a.attributes == {"href": "https://www.iana.org/domains/example"}
 
 
-def test_comment():
-    with open("../docs/html/test_comment.html") as file:
+def test_comment_tag():
+    with open("tests/docs/html/test_comment.html") as file:
         html_text = file.read()
 
     spicy = Spicy(
         text=html_text
     )
-    # print(spicy)
     assert spicy
+    assert len(list(spicy.iterChildren())) == 4
+    head, body = spicy.children
+    assert body.innerText == ""
+    assert len(head.children) == 2
+    meta, title = head.children
+    assert meta.attributes == {"charset": "UTF-8"}
+    print(meta)
+    assert meta.isClosed == False
 
 
-def test_broad2():
-    with open('../docs/html/test_broad2.html', encoding="utf-8") as file:
+def test_search():
+    with open('tests/docs/html/test_broad2.html', encoding="utf-8") as file:
         html_text = file.read()
 
     spicy = Spicy(
         html_text,
 
     )
-    # print(spicy)
     assert spicy
+    section = spicy.getElementById('main-section')
+    assert section.tag == "section"
+    assert section.id == "main-section"
 
-
-# test_comment()
+    list_search_meta = spicy.findAll("meta")
+    assert len(list_search_meta) == 9
+    assert all(i.tag == "meta" for i in list_search_meta)
+    assert list_search_meta[-1].attributes == {"property": "og:type", "content": "website"}
+    assert list_search_meta[0].attributes == {"name": 'hmac-token-name', "content": 'Ajax-Token'}

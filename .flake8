@@ -1,0 +1,16 @@
+[flake8]
+extend-ignore = E203
+exclude =
+    .git,
+    __pycache__,
+    venv,
+    migrations,
+    __init__.py,
+    docs/source/conf.py,
+    old,
+    tests
+    build,
+    dist,
+
+max-complexity = 10
+max-line-length = 120
