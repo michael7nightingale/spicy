@@ -66,6 +66,9 @@ class HTMLDocument(BaseDocument):
                 result = el
         return result
 
+    def getAllText(self) -> str:
+        return "\n".join(tag.innerText for tag in self)
+
 
 # class AHTMLDocument(BaseADocument):
 #     __slots__ = ("version", "charset")

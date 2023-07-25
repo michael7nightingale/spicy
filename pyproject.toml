@@ -1,0 +1,26 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "spicyy"
+version = "0.6"
+authors = [
+  { name="Michael Nightingale", email="suslanchikmopl@gmail.com" },
+]
+description = "A small example package"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/michael7nightingale/spicy"
+"Bug Tracker" = "https://github.com/michael7nightingale/spicy/issues"

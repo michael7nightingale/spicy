@@ -78,9 +78,10 @@ class HTMLTag(Tag, Node):
                 text = text[:from_replace_idx] + text[idx + len(tag_beginning):]
                 last_stack_tag = tag_stack[-1]
                 if '--' in tag_name:
-                    if '!--' in last_stack_tag and last_stack_tag.replace('!--', '') == tag_name.replace('--',
-                                                                                                         '').lstrip(
-                        '/'):
+                    if (
+                            '!--' in last_stack_tag
+                            and last_stack_tag.replace('!--', '') == tag_name.replace('--', '').lstrip('/')
+                    ):
                         tag_stack.pop()
                 else:
                     if tag_name.replace('/', '') == last_stack_tag:
