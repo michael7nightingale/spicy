@@ -1,4 +1,4 @@
-# Spicy (development) 
+# Spicy
 ### is a tag-based parser of text. 
 For example, HTML or XML are based on tags. And data text parsing can be useful when
 you need to find some tags by name and attributes or take separate parts of document. 
