@@ -81,7 +81,7 @@ def test_comment_tag():
     meta, title = head.children
     assert meta.attributes == {"charset": "UTF-8"}
     print(meta)
-    assert meta.isClosed == False
+    assert not meta.isClosed
 
 
 def test_search():
