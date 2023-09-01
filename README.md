@@ -39,7 +39,7 @@ Spicy tags and document have rich searching logic:
 - `findAll()` - returns the list of tag objects with the given parameters;
 - `findIter()` - generator version of `findAll()`, can reduce memory usage;
 - `findFirst()` - returns first tag object with given parameters;
-- `findLast()` - returns first tag object with given parameters;
+- `findLast()` - returns last tag object with given parameters;
 - `getElementById()` - returns tag object with given id;
 
 Useful properties:
